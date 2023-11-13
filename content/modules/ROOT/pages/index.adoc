@@ -1,51 +1,64 @@
-= {lab_name}
+== Installing the PCP tools
 
-The `lab_name` var, known as an asciidoc attribute, above was set in `./content/antora.yml` and can be used to set the lab_name or title of your content.
-You are both free to change its value and if you prefer to use a different var name, you can change the value of `lab_name`, for example to `title` in `./content/antora.yml` and then reference it in your content as `\{title}`.
-me
+Performance Co-Pilot (PCP) is a suite of tools, services, and libraries
+for collecting, visualizing, storing, and analyzing system-level
+performance measurements.
 
-== Variables
+First step is to install the PCP packages using dnf:
 
-Other vars can also be set there, such as `ssh_user` and `ssh_password`, and referenced inline in the lab content by using the `\{foo}` syntax.
-
-This is another var, or asciidoc attribute, from `./content/antora.yml` {my_var}
-
-== Writing your lab
-
-Whatever type of content you are writing we'll refer to your *content* as "your lab" in this document.
-
-=== Lab structure
-
-
-Wether you are writing a lab
-
-* First, we will build a monolithic application already compiled as RPM packages and put it into a container. This will allow us to deploy the application, copy it between machines, and update it separately from the operating system. This process affords us a portable and easily maintained component instead of tightly coupling the application with your operating system maintenance.
-
-* In closing we will build a second container on a different operating system version that makes an application not packaged into RPMs. This will be similar to a web application deployment, positioning the correct files at the right locations. To do this, we will pull a project from GitHub and position the component files within our container image. The purpose of this is to achieve a portable application container that can deploy on several different versions of Red Hat Enterprise Linux. This also provides the benefit of decoupling your application maintenance, which would all happen by building new containers versus operating system maintenance. The container is no longer reliant on the operating system installed on the machine where the application is deployed.
-
-
-. Now let's examine this cluster a bit more by describing the cluster (the `$GUID` environment variable is already set for you so you can immediately describe your individual cluster):
-+
-[source,sh,role=execute]
+[source,bash]
 ----
-podman ps
-----
-+
-.Sample Output
-[source,texinfo,subs="attributes"]
-----
-CONTAINER ID  IMAGE                        COMMAND           CREATED      STATUS      PORTS                 NAMES
-2dcfee9e50c4  docker.io/library/httpd:2.4  httpd-foreground  3 hours ago  Up 3 hours  0.0.0.0:8080->80/tcp  showroom-httpd
+dnf install -y pcp-zeroconf
 ----
 
+This RPM includes a number of PCP-related tools as dependencies to the
+main pcp package. This is prefered in the case that you need to do
+deeper performance analysis.
 
+Next, start and enable the *PCP’s Collector Daemon (PMCD)* to start
+collecting system performance data:
 
+[source,bash]
+----
+systemctl enable --now pmcd
+----
 
+Check the status of the enabled PMCD service:
 
+[source,bash]
+----
+systemctl status pmcd --no-pager
+----
 
+<< OUTPUT ABRIDGED >>
 
+Loaded: loaded (/usr/lib/systemd/system/pmcd.service; enabled; preset:
+disabled) Active: active (running) since Mon 2023-07-24 17:34:29 UTC;
+17s ago
 
-=== Lab Access
+<< OUTPUT ABRIDGED >>
 
-The terminal window to your right is *already* logged into the lab environment as the `{ssh_user}` user via `ssh`. 
-All steps of this lab are to be completed as the `{ssh_user}` user.
+....
+
+As shown in the output snippet above, verify that your system's pmcd service is active and running.
+
+Finally, look at the basic system information provided by the PCP command:
+
+```bash
+pcp
+....
+
+Performance Co-Pilot configuration on rhel:
+
+platform: Linux rhel 5.14.0-284.11.1.el9_2.x86_64 #1 SMP PREEMPT_DYNAMIC
+Wed Apr 12 10:45:03 EDT 2023 x86_64 hardware: 2 cpus, 2 disks, 1 node,
+7685MB RAM timezone: UTC services: pmcd pmcd: Version 6.0.1-4, 12
+agents, 6 clients pmda: root pmcd proc pmproxy xfs linux nfsclient mmv
+kvm jbd2 dm openmetrics pmlogger: primary logger:
+/var/log/pcp/pmlogger/rhel/20230724.17.34 pmie: primary engine:
+/var/log/pcp/pmie/rhel/pmie.log ```
+
+The output shows the two primary underlying components of PCP : *PCP’s
+Collector Daemon (PMCD)* which organizes, collects, manages metric
+information, and the *Performance Metric Domain Agents (PMDAs)* which
+knows how to gather information for different services.

@@ -6,7 +6,7 @@ performance measurements.
 
 First step is to install the PCP packages using dnf:
 
-[source,bash]
+[source,bash,run]
 ----
 dnf install -y pcp-zeroconf
 ----
@@ -18,45 +18,28 @@ deeper performance analysis.
 Next, start and enable the *PCP’s Collector Daemon (PMCD)* to start
 collecting system performance data:
 
-[source,bash]
+[source,bash,run]
 ----
 systemctl enable --now pmcd
 ----
 
 Check the status of the enabled PMCD service:
 
-[source,bash]
+[source,bash,run]
 ----
 systemctl status pmcd --no-pager
 ----
 
-<< OUTPUT ABRIDGED >>
+As shown in the output snippet above, verify that your system’s pmcd
+service is active and running.
 
-Loaded: loaded (/usr/lib/systemd/system/pmcd.service; enabled; preset:
-disabled) Active: active (running) since Mon 2023-07-24 17:34:29 UTC;
-17s ago
+Finally, look at the basic system information provided by the PCP
+command:
 
-<< OUTPUT ABRIDGED >>
-
-....
-
-As shown in the output snippet above, verify that your system's pmcd service is active and running.
-
-Finally, look at the basic system information provided by the PCP command:
-
-```bash
+[source,bash,run]
+----
 pcp
-....
-
-Performance Co-Pilot configuration on rhel:
-
-platform: Linux rhel 5.14.0-284.11.1.el9_2.x86_64 #1 SMP PREEMPT_DYNAMIC
-Wed Apr 12 10:45:03 EDT 2023 x86_64 hardware: 2 cpus, 2 disks, 1 node,
-7685MB RAM timezone: UTC services: pmcd pmcd: Version 6.0.1-4, 12
-agents, 6 clients pmda: root pmcd proc pmproxy xfs linux nfsclient mmv
-kvm jbd2 dm openmetrics pmlogger: primary logger:
-/var/log/pcp/pmlogger/rhel/20230724.17.34 pmie: primary engine:
-/var/log/pcp/pmie/rhel/pmie.log ```
+----
 
 The output shows the two primary underlying components of PCP : *PCP’s
 Collector Daemon (PMCD)* which organizes, collects, manages metric
